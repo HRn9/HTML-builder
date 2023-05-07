@@ -4,19 +4,25 @@ const path = require('path');
 const folderPath = path.join(__dirname, 'files');
 const copyFolderPath = path.join(__dirname, 'files-copy');
 
-fs.mkdir(copyFolderPath, { recursive: true })
-  .catch(err => {
-    console.error(err);
-  });
-
-fs.readdir(folderPath)
-  .then(files => {
-    files.forEach(file => {
+const copyDir = async () => {
+  try {
+    const copyFiles = await fs.readdir(copyFolderPath);
+    for (const file of copyFiles) {
+      await fs.unlink(path.join(copyFolderPath, file));
+    }
+    const sourceFiles = await fs.readdir(folderPath);
+    for (const file of sourceFiles) {
       const FilePath = path.join(folderPath, file);
       const copyFilePath = path.join(copyFolderPath, file);
-      fs.copyFile(FilePath, copyFilePath);
-    });
-  })
+      await fs.copyFile(FilePath, copyFilePath);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+fs.mkdir(copyFolderPath, { recursive: true })
+  .then(() => copyDir())
   .catch(err => {
     console.error(err);
   });
